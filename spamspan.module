@@ -1,0 +1,153 @@
+<?php
+
+// $Id$
+
+/**
+ * @file
+ * This module implements the spamspan technique ( http://www.spamspan.com ) for hiding
+ * email addresses from spambots.  If javascript is disabled on the client-side, addresses
+ * appear as example [at] example [dot] com.
+ *
+ * (c) 2006 Lawrence Akka
+ *
+ * Licenced under GPL v 2 -  see http://www.gnu.org/licenses/gpl.txt
+ */
+
+/**
+ * Implementation of hook_help().
+ *
+ */
+function spamspan_help($section) {
+  switch ($section) {
+    case 'admin/modules#description':
+      // This description is shown in the listing at admin/modules.
+      $output = t('Disguises email addresses in an attempt to reduce spam.');
+      if (module_exist('spamspan')) {
+        $output .= t(' <a href="%url">more help</a>', array('%url' => url('admin/help/spamspan')));
+      }
+      return $output;
+    case 'admin/help#spamspan':
+      return t('<p>The SpamSpan module obfuscates email addresses to help prevent spambots from collecting them. It will produce clickable links if JavaScript is enabled, and will show the email address as <code>example [at] example [dot] com</code> if the browser does not support JavaScript.</p><p>To configure the module, select "configure" next to the <a href="%url">input format</a> you\'d like to use. Enable "Hide Email Addresses" and submit the form. Then select the "configure" tab to choose relevant options.</p>', array('%url' => url('admin/filters')));
+  }
+}
+
+/**
+ * Implementation of hook_filter_tips().
+ *
+ */
+function spamspan_filter_tips($delta, $format, $long = FALSE) {
+  switch ($delta) {
+    case 0:
+      if ($long) {
+        return t('Each email address will be obfuscated in a human readble fashion or (if JavaScript is enabled) replaced with a spamproof clickable link.');
+      }
+      break;
+  }
+}
+
+function spamspan_nodeapi($node, $op, $teaser, $page) {
+  if ($op == "view") {
+    // Add javascript only to pages that need it, ie with a spamspan class    
+    if ($teaser) { $haystack = $node->teaser; } else { $haystack = $node->body; }    
+if (strpos( $haystack, '<span class="spamspan">')) {
+	drupal_add_js(drupal_get_path("module", "spamspan") . '/spamspan.js');
+	// pass necessary variables to the javascript
+	global $spamspan_format;
+	$script =  "var spamSpanMainClass = 'spamspan';";
+	$script .= "var spamSpanUserClass = " . drupal_to_js(variable_get('spamspan_userclass_'.$spamspan_format, 'u')) . ";";
+	$script .= "var spamSpanDomainClass = " . drupal_to_js(variable_get('spamspan_domainclass_'.$spamspan_format, 'd')) . ";";
+	$script .= "var spamSpanAnchorTextClass = " . drupal_to_js(variable_get('spamspan_anchorclass_'.$spamspan_format, 't')) . ";";
+	drupal_set_html_head('<script type="text/javascript">'.$script.'</script>'); 
+	
+ }
+  }
+}
+
+/**
+ * Implementation of hook_filter().
+ *
+ */
+function spamspan_filter($op, $delta = 0, $format = -1, $text = '') {
+  if ($op == 'list') {
+    return array(0 => t('Hide email addresses'));
+  }
+
+  switch ($delta) {
+
+    case 0:
+
+      switch ($op) {
+        case 'description':
+          return t('Attempt to hide email addresses from spam-bots.');
+
+        case 'prepare':
+          return $text;
+
+        case 'process':
+          return spamspan($text, $format);
+
+        case 'settings':
+          $form['spamspan_settings'] = array(
+            '#type' => 'fieldset',
+            '#title' => t('SpamSpan email address encoding filter'),
+	    '#description' => t('You probably do not need to change any of these settings'),
+            '#collapsible' => true, '#collapsed' => true
+          );
+
+          $form['spamspan_settings']['spamspan_userclass_'.$format] = array(
+	    '#type' => 'textfield', 
+	    '#title' => t('Local part class'), 
+	    '#default_value' =>  variable_get('spamspan_userclass_'.$format, 'u'), 
+	    '#required' => TRUE,           
+	    '#description' => t('The class name of the &lt;span&gt; element enclosing the part of the address before the @')
+									    );
+	    
+	  $form['spamspan_settings']['spamspan_domainclass_'.$format] = array(
+	    '#type' => 'textfield', 
+	    '#title' => t('Domain part class'), 
+	    '#default_value' => variable_get('spamspan_domainclass_'.$format, 'd'), 
+	    '#required' => TRUE,           
+	    '#description' => t('The class name of the &lt;span&gt; element enclosing the part of the address after the @')
+									      );
+
+	  $form['spamspan_settings']['spamspan_at_'.$format] = array(
+	    '#type' => 'textfield', 
+	    '#title' => t('@ text'), 
+	    '#default_value' => variable_get('spamspan_at_'.$format, ' [at] '), 
+	    '#required' => TRUE,           
+	    '#description' => t('Replace @ with this text when javascript is disabled')
+
+									    );
+          return $form;
+      }
+      break;
+  }
+}
+
+function spamspan ($string, $format) {
+  /*  We are aiming for code like this:
+   <span class="spamspan">
+   <span class="u">user</span>
+   [at]
+   <span class="d">example [dot] com</span>
+   </span>
+  */
+  // $pattern = "!(<p>|<li>|[ \n\r\t\(])([A-Za-z0-9._+-]+)\@([A-Za-z0-9._-]+)\.([A-Za-z]{2,4})([.,]?)(?=(</p>|</li>|[ \n\r\t\)]))!i";
+
+  $GLOBALS['spamspan_format'] = $format;
+
+  function spamspan_callback($matches) {
+    // Replace .'s in domain part with [dot]
+    global $spamspan_format;
+    $domain = str_replace("."," [dot] ", $matches[3]);
+    return "$matches[1]<span class=\"spamspan\"><span class=\"" . variable_get('spamspan_userclass_'.$spamspan_format, 'u') . "\">$matches[2]</span>" . variable_get('spamspan_at_'.$spamspan_format, ' [at] ') . "<span class=\"" . variable_get('spamspan_domainclass_'.$spamspan_format, 'd') . "\">$domain</span></span>";
+  }
+  
+  $pattern = "!(<p>|<li>|<br\s*/?>|[ \n\r\t\(])(?:([-\.\w\+^@]+)@((?:[-\w]+\.)+[A-Z]{2,4}))(?:[.,]?)(?=(?:</p>|</li>|<br\s*/?>|[ \n\r\t\)]))!i";
+  return preg_replace_callback($pattern, 'spamspan_callback', $string);
+}
+
+
+
+
+
