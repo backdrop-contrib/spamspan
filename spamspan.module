@@ -80,6 +80,12 @@ function spamspan_comment($comment, $op) {
   }
 }
 
+// Test code for use with views module
+/*
+function spamspan_post_view($view, $items, $output) {
+  _spamspan_replace($output);	
+}
+*/
 
 
 /**
