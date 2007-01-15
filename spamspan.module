@@ -8,7 +8,7 @@
  * email addresses from spambots.  If javascript is disabled on the client-side, addresses
  * appear as example [at] example [dot] com.
  *
- * (c) 2006 Lawrence Akka
+ * (c) 2006 - 2007 Lawrence Akka
  *
  * Licenced under GPL v 2 -  see http://www.gnu.org/licenses/gpl.txt
  */
@@ -22,7 +22,7 @@ function spamspan_help($section) {
     case 'admin/modules#description':
       // This description is shown in the listing at admin/modules.
       $output = t('Disguises email addresses in an attempt to reduce spam.');
-      if (module_exist('spamspan')) {
+      if (module_exists('spamspan')) {
         $output .= t(' <a href="%url">more help</a>', array('%url' => url('admin/help/spamspan')));
       }
       return $output;
@@ -39,10 +39,8 @@ function spamspan_help($section) {
 function spamspan_filter_tips($delta, $format, $long = FALSE) {
   switch ($delta) {
     case 0:
-      if ($long) {
         return t('Each email address will be obfuscated in a human readble fashion or (if JavaScript is enabled) replaced with a spamproof clickable link.');
-      }
-      break;
+        break;
   }
 }
 
@@ -50,42 +48,29 @@ function _spamspan_replace(&$haystack) {
   // Search in $haystack for spamspan classes and set appropriate headers if found
   // Allows us to add javascript only to pages that need it, ie with a spamspan class    
 
-    if (strpos( $haystack, '<span class="spamspan">')) {
-      drupal_add_js(drupal_get_path("module", "spamspan") . '/spamspan.js');
+  if  (strpos( $haystack, '<span class="spamspan">')) {
+      drupal_add_js($data=drupal_get_path("module", "spamspan") . '/spamspan.js',$scop='header');
       // pass necessary variables to the javascript
       global $spamspan_format;
       $script =  "var spamSpanMainClass = 'spamspan';";
       $script .= "var spamSpanUserClass = " . drupal_to_js(variable_get('spamspan_userclass_'.$spamspan_format, 'u')) . ";";
       $script .= "var spamSpanDomainClass = " . drupal_to_js(variable_get('spamspan_domainclass_'.$spamspan_format, 'd')) . ";";
       $script .= "var spamSpanAnchorTextClass = " . drupal_to_js(variable_get('spamspan_anchorclass_'.$spamspan_format, 't')) . ";";
-      drupal_set_html_head('<script type="text/javascript">'.$script.'</script>'); 
+      drupal_add_js($data=$script, $type='inline', $scope='header'); 
     }
 }
 
 
 //  We need to search for spamspan classes when nodes and comments are rendered.
-function spamspan_nodeapi($node, $op, $teaser, $page) {
-  if ($op == "view") {
-    if ($teaser) { $haystack = $node->teaser; } 
+function spamspan_nodeapi(&$node, $op) {
+  if ($op == "alter") {
+    if ($node->teaser) { $haystack = $node->teaser; } 
     else 
       { $haystack = $node->body; 
       }
     _spamspan_replace($haystack);    
   }
 }
-
-function spamspan_comment($comment, $op) {
-  if ($op == "view") {
-    _spamspan_replace($comment->comment);
-  }
-}
-
-// Test code for use with views module
-/*
-function spamspan_post_view($view, $items, $output) {
-  _spamspan_replace($output);	
-}
-*/
 
 
 /**
