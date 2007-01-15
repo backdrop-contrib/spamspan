@@ -72,6 +72,11 @@ function spamspan_nodeapi(&$node, $op) {
   }
 }
 
+function spamspan_comment($comment, $op) {
+  if ($op == "view") {
+    _spamspan_replace($comment->comment);
+  }
+}
 
 /**
  * Implementation of hook_filter().
