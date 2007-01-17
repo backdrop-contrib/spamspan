@@ -8,28 +8,31 @@
 	--------------------------------------------------------------------------
 */
 
+/*  
+	IF YOU MAKE ANY CHANGES HERE COMPRESS THIS SOURCE CODE USING
+   	http://alex.dojotoolkit.org/shrinksafe/ TO MAKE spamspan.compressed.js
+*/
+
 
 // load SpamSpan
 if (Drupal.jsEnabled) {
    $(function () {
-
 // get each span with class spamSpanMainClass
-
-       $("span." + spamSpanMainClass).each(function (index) {
+       $("span." + Drupal.settings.spamspan.m).each(function (index) {
 // for each such span, set mail to the relevant value, removing spaces	
-	    var mail = ($("span." + spamSpanUserClass, this).text() + 
+	    var _mail = ($("span." + Drupal.settings.spamspan.u, this).text() + 
 	    	"@" + 
-	    	$("span." + spamSpanDomainClass, this).text())
+	    	$("span." + Drupal.settings.spamspan.d, this).text())
 	    	.replace(/\s+/g, '')
 	    	.replace(/[\[\(\{]?[dD][oO0][tT][\}\)\]]?/g, '.');		
-	    var anchorText = $("span" +  spamSpanAnchorTextClass, this).text();
+	    var _anchorText = $("span" +  Drupal.settings.spamspan.t, this).text();
 // create the <a> element, and replace the original span contents
    	    $(this).after(
 		$("<a></a>")
-		.attr("href", "mailto:" + mail)
-		.html(anchorText ? anchorText : mail)
+		.attr("href", "mailto:" + _mail)
+		.html(_anchorText ? _anchorText : _mail)
 		.addClass("spamspan")
 		).remove();
 	} );
-    } )
+	} )
 }
