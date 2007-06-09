@@ -13,6 +13,7 @@ class Main extends UnitTestCase
 		// Simple utility function to check that email within text is converted
 		$this->assertEqual($prefix.$shouldbe.$suffix, spamspan($prefix.$original.$suffix, "") );
 	}
+	
 	function testNoEmail() {
 		// test that strings without emails a passed unchanged
 		$noemails = array(
@@ -108,7 +109,20 @@ class Main extends UnitTestCase
 		}
 
 	}
-}
+	
+	function testMailto() {
+		$this->assertEqual(spamspan_convertmailto("<a href='mailto:email@example.com'></a>"), "email@example.com");
+		$this->assertEqual(spamspan_convertmailto("<a href='email@example.com'></a>"), "<a href='email@example.com'></a>");
+		$this->assertEqual(spamspan_convertmailto("<a href='mailto:email@example.com'>some text</a>text"), "email@example.comtext");
+		$this->assertEqual(spamspan_convertmailto("<a href='mailto:email@example.com'></a>"), "email@example.com");
+		$this->assertEqual(spamspan_convertmailto("<a attribute='something' href='mailto:email@example.com' attribute='something'></a>"), "email@example.com");
+		$this->assertEqual(spamspan_convertmailto('<a href="mailto:email@example.com">some text</a>'), "email@example.com");
+// ignore parameters
+		$this->assertEqual(spamspan_convertmailto('<a href="mailto:email@example.com">some text</a>'), "email@example.com");
+		}
+		}
+
+
 // set up a dummy function, because variable_get is not available outside drupal
 function variable_get($one, $two)
 {
