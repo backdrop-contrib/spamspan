@@ -207,7 +207,7 @@ function _spamspan_output($name, $domain, $contents, $headers) {
   // Replace .'s in the address with [dot]
   $user_name = str_replace(".", " [dot] ", $name);
   $domain = str_replace(".", " [dot] ", $domain);
-  $at = $settings['spamspan_use_graphic'] ? '<img alt="at" width="10" src="' . base_path() . drupal_get_path("module", "spamspan") . "/image.gif" . '" />' : $settings['spamspan_at'];
+  $at = $settings['spamspan_use_graphic'] ? theme('email_at_sign'): $settings['spamspan_at'];
 
 
   $output = '<span class="spamspan"><span class="u">' . $user_name . '</span>' . $at . '<span class="d">' . $domain . '</span>';
@@ -235,6 +235,27 @@ function _spamspan_output($name, $domain, $contents, $headers) {
   // @
   $output = filter_xss($output, $allowed_tags = array('em', 'strong', 'cite', 'b', 'i', 'code', 'span', 'img'));
   return $output;
+}
+
+/**
+ * Implements hook_theme
+**/
+
+function  spamspan_theme($existing, $type, $theme, $path) {
+  return array(
+    'email_at_sign' => array()
+    );
+}
+
+/**
+ * Themeable function for the graphical @ sign which is used when javascript
+ * is disabled. NB: This will have no effect unless "Use a graphical
+ * replacement for "@"" is checked on the filter's settings page
+**/
+function theme_email_at_sign() {
+  // return an img tag referencing a graphical representation of the @ sign
+  $content = '<img alt="at" width="10" src="' . base_path() . drupal_get_path("module", "spamspan") . "/image.gif" . '" />'; 
+  return $content;
 }
 
 
