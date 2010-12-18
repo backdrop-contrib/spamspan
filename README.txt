@@ -12,27 +12,37 @@ clickable links if JavaScript is enabled, and will show the email address as
 JavaScript or if JavaScript is disabled.
 
 Installation
----------
+------------
 
-1. Create a directory in the Drupal modules/ directory called spamspan and copy
-   all of the module's files into it. 
+1. Create a directory in your Drupal modules directory (probably
+   sites/all/modules/) called spamspan and copy all of the module's
+   files into it.
 
-2. Go to 'administer > modules', and enable the spamspan.module
+2. Go to the Modules administration page (admin/modules), and enable the
+   spamspan module (under Input Filters)
 
-3. Go to 'administer > configuration > input formats' and enable the filter in
-   the desired input formats.
+3. Go to the Text Formats Configuration page (admin/config/content/formats)
+   and configure the desired input formats to enable the filter.
 
-4. Rearrange the filters on the input format's 'rearrange' tab to
-   resolve conflicts with other filters.  NB: To avoid problems, you
-   should at least make sure that the SpamSpan filter has a higher
-   weighting (greater number) than the line break filter which comes
-   with Drupal, so that the line break filter is executed first.
+4. Rearrange the Filter processing order to resolve conflicts with other 
+   filters.  NB: To avoid problems, you should at least make sure that the 
+   SpamSpan filter has a higher weighting (greater number) than the line break 
+   filter which comes with Drupal ("Convert line breaks into HTML" should come 
+   above SpamSpan in the list of Enabled filters).  If you use HTML filter 
+   ("Limit allowed HTML tags"), you may need to make sure that <span> is 
+   one of the allowed tags. Also, URL filter ("Convert URLs into links") must 
+   come after SpamSpan.
 
-5. (optional) Select the configure tab to set available options
+5. (optional) Set available options under "Filter Settings". 
+
+Bugs
+----
+
+Please report any bugs using the bug tracker at
+http://drupal.org/project/issues/spamspan
+
 
 Module Author
 ------------
 
 Lawrence Akka : Contact me via http://drupal.org/user/63367
-
-Note:  The spamspan javascript file is from www.spamspan.com
