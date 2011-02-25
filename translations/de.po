@@ -1,5 +1,4 @@
 # German translation of spamspan module
-# $Id$
 # LANGUAGE translation of Drupal (general)
 # Copyright 2008 Andreas Emer drupal(at)emdec(dot)de
 # Generated from file: spamspan.module,v 1.7 2007/01/17 21:33:58 lakka
