@@ -205,19 +205,29 @@ class spamspan_admin {
       }
       $output .= '<span class="h"> (' . check_plain(implode(', ', $temp_headers)) . ') </span>';
     }
-    // if there are tag contents, include them, between round brackets, unless
-    // the contents are an email address.  In that case, we can ignore them.  This
-    // is also a good idea because otherwise the tag contents are themselves
+
+    // If there are tag contents, include them, between round brackets.
+    // Remove emails from the tag contents, otherwise the tag contents are themselves
     // converted into a spamspan, with undesirable consequences - see bug #305464.
-    // NB problems may still be caused by edge cases, eg if the tag contents are
-    // "blah blah email@example.com ..."
-    if (isset($contents) and $contents and !(preg_match('!^' . SPAMSPAN_EMAIL . '$!ix', $contents))) {
-      $output .= '<span class="t"> (' . $contents . ')</span>';
+    if (!empty($contents)) {
+      $contents = preg_replace('!' . SPAMSPAN_EMAIL . '!ix', '', $contents);
+      // tags will be ignored by spanspan.js anyway (see jquery.text())
+      // @TODO: stop stripping tags
+      $contents = strip_tags($contents);
+
+      if (!empty($contents)) {
+        $output .= '<span class="a"> (' . $contents . ')</span>';
+      }
     }
 
     // remove anything except certain inline elements, just in case.  NB nested
     // <a> elements are illegal.  <img> needs to be here to allow for graphic
     // @
+    // Note:
+    // Even if we fix spanspan.js to accomodate for tags the code below
+    // will remove any <!-- img --> comments, see _spamspan_filter_process()
+    // It means that one cannot currently have images that one can click to mailto things.
+    // e.g. <a href="mailto:user@example.com"><img src="myimage.png"></a>
     $output = filter_xss($output, $allowed_tags = array('em', 'strong', 'cite', 'b', 'i', 'code', 'span', 'img'));
 
     // put in the extra <a> attributes

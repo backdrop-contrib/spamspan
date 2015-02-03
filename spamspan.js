@@ -31,7 +31,7 @@ Drupal.behaviors.spamspan = {
         return (n.replace(/: /,"="));
       });
       // Find the anchor text, and remove the round brackets from the start and end
-      var _anchorText = $("span.t", this).text().replace(/^ \((.*)\)$/, "$1");
+      var _anchorText = $("span.a", this).text().replace(/^ \((.*)\)$/, "$1");
       // Build the mailto URI
       var _mailto = "mailto:" + encodeURIComponent(_mail);
       var _headerstring = _headers.join('&');
