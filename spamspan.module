@@ -118,7 +118,7 @@ function _spamspan_filter_process($text, $filter) {
       \s*                                             # whitespace
       href\s*=\s*(['\"])(mailto:"                     # the href attribute
       . SPAMSPAN_EMAIL .                              # The email address
-      "(?:\?[A-Za-z0-9_= %\.\-\~\_\&]*)?)" .            # an optional ? followed
+      "(?:\?[A-Za-z0-9_= %\.\-\~\_\&;\!]*)?)" .       # an optional ? followed
                                                       # by a query string. NB
                                                       # we allow spaces here,
                                                       # even though strictly
@@ -246,7 +246,9 @@ function _spamspan_callback_mailto($matches) {
   // into its component parts, putting them in $headers as
   // [0]=>"header=contents" etc.  We cannot use parse_str because
   // the query string might contain dots.
-  $headers = preg_split('/[&;]/', parse_url($matches[3], PHP_URL_QUERY));
+  $query = parse_url($matches[3], PHP_URL_QUERY);
+  $query = str_replace('&amp;', '&', $query);
+  $headers = preg_split('/[&;]/', $query);
   // if no matches, $headers[0] will be set to '' so $headers must be reset
   if ($headers[0] == '') {
     $headers = array();
