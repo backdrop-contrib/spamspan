@@ -39,8 +39,16 @@ Drupal.behaviors.spamspan = {
       // create the <a> element, and replace the original span contents
       // Issue https://www.drupal.org/node/1540732
       // .attr("href", _mailto) replaced by .attr("href", decodeURIComponent(_mailto))
+
+      //check for extra <a> attributes
+      var _attributes = $("span.e", this).html();
+      var _tag = "<a></a>";
+      if (_attributes) {
+        _tag = "<a " + _attributes.replace("<!--", "").replace("-->", "") + "></a>";
+      }
+
       $(this).after(
-        $("<a></a>")
+        $(_tag)
           .attr("href", decodeURIComponent(_mailto))
           .html(_anchorText ? _anchorText : _mail)
           .addClass("spamspan")

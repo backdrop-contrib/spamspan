@@ -158,7 +158,7 @@ class spamspan_admin {
    * @return
    *  The span with which to replace the email address
    */
-  function output($name, $domain, $contents = '', $headers = '', $vars = '', $settings = NULL) {
+  function output($name, $domain, $contents = '', $headers = '', $vars = array(), $settings = NULL) {
     if ($settings === NULL) {
       $settings = $this->defaults;
       if ($this->filter_is()) {
@@ -214,11 +214,20 @@ class spamspan_admin {
     if (isset($contents) and $contents and !(preg_match('!^' . SPAMSPAN_EMAIL . '$!ix', $contents))) {
       $output .= '<span class="t"> (' . $contents . ')</span>';
     }
-    $output = '<span class="spamspan">' . $output . '</span>';
+
     // remove anything except certain inline elements, just in case.  NB nested
     // <a> elements are illegal.  <img> needs to be here to allow for graphic
     // @
     $output = filter_xss($output, $allowed_tags = array('em', 'strong', 'cite', 'b', 'i', 'code', 'span', 'img'));
+
+    // put in the extra <a> attributes
+    // this has to come after the xss filter, since we want comment tags preserved
+    if (!empty($vars['extra_attributes'])) {
+      $output .= '<span class="e"><!--'. strip_tags($vars['extra_attributes']) .'--></span>';
+    }
+
+    $output = '<span class="spamspan">' . $output . '</span>';
+    
     return $output;
   }
   

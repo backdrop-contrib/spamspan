@@ -114,7 +114,7 @@ function _spamspan_filter_process($text, $filter) {
   // the fourth. The tag contents go into the fifth.
 
   $mailtopattern = "!<a\s+                            # opening <a and spaces
-      (?:(?:\w+\s*=\s*)(?:\w+|\"[^\"]*\"|'[^']*'))*?  # any attributes
+      ((?:\w+\s*=\s*)(?:\w+|\"[^\"]*\"|'[^']*'))*?    # any attributes
       \s*                                             # whitespace
       href\s*=\s*(['\"])(mailto:"                     # the href attribute
       . SPAMSPAN_EMAIL .                              # The email address
@@ -124,9 +124,9 @@ function _spamspan_filter_process($text, $filter) {
                                                       # even though strictly
                                                       # they should be URL
                                                       # encoded
-      "\\1                                            # the relevant quote
+      "\\2                                            # the relevant quote
                                                       # character
-      (?:(?:\s+\w+\s*=\s*)(?:\w+|\"[^\"]*\"|'[^']*'))*? # any more attributes
+      ((?:\s+\w+\s*=\s*)(?:\w+|\"[^\"]*\"|'[^']*'))*? # any more attributes
       >                                               # end of the first tag
       (.*?)                                           # tag contents.  NB this
                                                       # will not work properly
@@ -242,16 +242,34 @@ function spamspan_help($path, $arg) {
  *  The span with which to replace the email address
  */
 function _spamspan_callback_mailto($matches) {
-  // take the mailto: URL in $matches[2] and split the query string
+  // take the mailto: URL in $matches[3] and split the query string
   // into its component parts, putting them in $headers as
   // [0]=>"header=contents" etc.  We cannot use parse_str because
   // the query string might contain dots.
-  $headers = preg_split('/[&;]/', parse_url($matches[2], PHP_URL_QUERY));
+  $headers = preg_split('/[&;]/', parse_url($matches[3], PHP_URL_QUERY));
   // if no matches, $headers[0] will be set to '' so $headers must be reset
   if ($headers[0] == '') {
     $headers = array();
   }
-  return spamspan_admin()->output($matches[3], $matches[4], $matches[5], $headers);
+
+  // take all <a> attributes except the href and put them into custom $vars
+  $vars = $attributes = array();
+  //before href
+  if (!empty($matches[1])) {
+    $matches[1] = trim($matches[1]);
+    $attributes[] = $matches[1];
+  }
+  //after href
+  if (!empty($matches[6])) {
+    $matches[6] = trim($matches[6]);
+    $attributes[] = $matches[6];
+  }
+
+  if (count($attributes)) {
+    $vars['extra_attributes'] = implode(' ', $attributes);
+  }
+
+  return spamspan_admin()->output($matches[4], $matches[5], $matches[7], $headers, $vars);
 }
 
 /**
