@@ -19,6 +19,13 @@ class SpamspanTestCase extends DrupalWebTestCase {
     $this->assertEqual($prefix . $shouldbe . $suffix, $output);
   }
 
+
+  private function _assert_form($input, $shouldbe, $prefix = '', $suffix = '') {
+    $settings = array('spamspan_use_form' => 1);
+    $output = spamspan($prefix . $input . $suffix, $settings);
+    $this->assertEqual($prefix . $shouldbe . $suffix, $output);
+  }
+
 	function testSpamspan() {
 		// test that strings without emails a passed unchanged
     $noemails = array(
@@ -102,6 +109,50 @@ class SpamspanTestCase extends DrupalWebTestCase {
       // Test for spaces
       $this->_assert($input, $shouldbe, ' ', ' ');
     }
+
+    $basepath = base_path();
+    // use form tests
+    $emails = array(
+      'user@example.com' =>
+        '<a href="'. $basepath .'contact?goto=dXNlckBleGFtcGxlLmNvbQ%3D%3D">contact form</a>',
+
+      'user@example.co.uk[mycontactform]' =>
+        '<a href="'. $basepath .'mycontactform?goto=dXNlckBleGFtcGxlLmNvLnVr">contact form</a>',
+
+      'user@example.com[http://google.com]' =>
+        '<a href="http://google.com?goto=dXNlckBleGFtcGxlLmNvbQ%3D%3D">contact form</a>',
+
+      'user@example.museum[mycontactform|Contact me using this form]' =>
+        '<a href="'. $basepath .'mycontactform?goto=dXNlckBleGFtcGxlLm11c2V1bQ%3D%3D">Contact me using this form</a>',
+    );
+
+    foreach ($emails as $input => $shouldbe) {
+      // Test for bare email;
+      $this->_assert_form($input, $shouldbe);
+      // Test for email with text at the start
+      $this->_assert_form($input, $shouldbe, 'some text at the start ');
+      // Test for email with text at the end
+      $this->_assert_form($input, $shouldbe, '', ' some text at the end');
+      // Test for email with text at the start and end
+      $this->_assert_form($input, $shouldbe, 'some text at the start ', ' some text at the end');
+      // Test for email with tags at the start and end
+      $this->_assert_form($input, $shouldbe, '<p>', '</p>');
+      // Test for email with trailing commas
+      $this->_assert_form($input, $shouldbe, 'some text at the start ', ', next clause.');
+      // Test for email with trailing full stop
+      $this->_assert_form($input, $shouldbe, 'some text at the start ', '. next sentence.');
+      // Test for email with preceding tag, and no closing tag
+      $this->_assert_form($input, $shouldbe, '<dt>');
+      // Test for brackets
+      $this->_assert_form($input, $shouldbe, '(', ')');
+      // Test for angular brackets
+      $this->_assert_form($input, $shouldbe, '<', '>');
+      // Test for newlines
+      $this->_assert_form($input, $shouldbe, "\n", "\n");
+      // Test for spaces
+      $this->_assert_form($input, $shouldbe, ' ', ' ');
+    }
+
 	}
 	
 }
