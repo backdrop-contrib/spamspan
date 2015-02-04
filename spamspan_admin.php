@@ -216,10 +216,10 @@ class spamspan_admin {
 
     $at = $settings['spamspan_at'];
     if ($settings['spamspan_use_graphic']) {
-      $at = '<img class="spam-span-image" alt="at" width="10" src="' . base_path() . drupal_get_path('module', 'spamspan') . '/image.gif" />';
+      $at = theme('spamspan_at_sign', array('settings' => $settings));
     }
 
-    if (isset($settings['spamspan_dot_enable']) and $settings['spamspan_dot_enable']) {
+    if ($settings['spamspan_dot_enable']) {
       // Replace .'s in the address with [dot]
       $name = str_replace('.', '<span class="t">' . $settings['spamspan_dot'] . '</span>', $name);
       $domain = str_replace('.', '<span class="t">' . $settings['spamspan_dot'] . '</span>', $domain);
