@@ -63,6 +63,9 @@ class SpamspanTestCase extends DrupalWebTestCase {
       '<a href="mailto:email@example.com"></a>' =>
         '<span class="spamspan"><span class="u">email</span> [at] <span class="d">example.com</span></span>',
 
+      '<a href="mailto:email@example.com"><img src="/misc/favicon.ico"></a>' =>
+        '<span class="spamspan"><span class="u">email</span> [at] <span class="d">example.com</span><span class="a"> (<img src="/misc/favicon.ico">)</span></span>',
+
       '<a href="mailto:email@example.com?subject=Hi there!&body=Dear Sir">some text</a>' =>
         '<span class="spamspan"><span class="u">email</span> [at] <span class="d">example.com</span><span class="h"> (subject: Hi there!, body: Dear Sir) </span><span class="a"> (some text)</span></span>',
 

@@ -191,7 +191,7 @@ function _filter_spamspan_escape_images($match, $escape = NULL) {
 
   // Replace all HTML image with a '<img [hash] />' placeholder.
   if ($mode) {
-    $content = $match[1];
+    $content = trim($match[1]);
     $hash = md5($content);
     $comments[$hash] = $content;
     return "<!--img $hash -->";
@@ -201,7 +201,7 @@ function _filter_spamspan_escape_images($match, $escape = NULL) {
     $hash = $match[1];
     $hash = trim($hash);
     $content = $comments[$hash];
-    return "<img $content >";
+    return "<img $content>";
   }
 }
 

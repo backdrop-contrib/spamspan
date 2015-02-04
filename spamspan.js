@@ -30,8 +30,11 @@ Drupal.behaviors.spamspan = {
       var _headers = $.map(_headerText.split(/, /), function(n, i){
         return (n.replace(/: /,"="));
       });
-      // Find the anchor text, and remove the round brackets from the start and end
-      var _anchorText = $("span.a", this).text().replace(/^ \((.*)\)$/, "$1");
+      // Find the anchor content, and remove the round brackets from the start and end
+      var _anchorContent = $("span.a", this).html();
+      if (_anchorContent) {
+        _anchorContent = _anchorContent.replace(/^ ?\((.*)\) ?$/, "$1");
+      }
       // Build the mailto URI
       var _mailto = "mailto:" + encodeURIComponent(_mail);
       var _headerstring = _headers.join('&');
@@ -50,7 +53,7 @@ Drupal.behaviors.spamspan = {
       $(this).after(
         $(_tag)
           .attr("href", decodeURIComponent(_mailto))
-          .html(_anchorText ? _anchorText : _mail)
+          .html(_anchorContent ? _anchorContent : _mail)
           .addClass("spamspan")
       ).remove();
     });

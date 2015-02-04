@@ -211,24 +211,16 @@ class spamspan_admin {
     // converted into a spamspan, with undesirable consequences - see bug #305464.
     if (!empty($contents)) {
       $contents = preg_replace('!' . SPAMSPAN_EMAIL . '!ix', '', $contents);
-      // tags will be ignored by spanspan.js anyway (see jquery.text())
-      // @TODO: stop stripping tags
-      $contents = strip_tags($contents);
+
+      // remove anything except certain inline elements, just in case.  NB nested
+      // <a> elements are illegal. <img> needs to be here to allow for graphic @
+      // !-- is allowed because of _filter_spamspan_escape_images
+      $contents = filter_xss($contents, array('em', 'strong', 'cite', 'b', 'i', 'code', 'span', '!--'));
 
       if (!empty($contents)) {
         $output .= '<span class="a"> (' . $contents . ')</span>';
       }
     }
-
-    // remove anything except certain inline elements, just in case.  NB nested
-    // <a> elements are illegal.  <img> needs to be here to allow for graphic
-    // @
-    // Note:
-    // Even if we fix spanspan.js to accomodate for tags the code below
-    // will remove any <!-- img --> comments, see _spamspan_filter_process()
-    // It means that one cannot currently have images that one can click to mailto things.
-    // e.g. <a href="mailto:user@example.com"><img src="myimage.png"></a>
-    $output = filter_xss($output, $allowed_tags = array('em', 'strong', 'cite', 'b', 'i', 'code', 'span', 'img'));
 
     // put in the extra <a> attributes
     // this has to come after the xss filter, since we want comment tags preserved
