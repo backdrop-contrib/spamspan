@@ -165,7 +165,7 @@ class SpamspanTestCase extends DrupalWebTestCase {
     // graphical at and [dot]
     $emails = array(
       'user@example.com' =>
-        '<span class="spamspan"><span class="u">user</span><img class="spam-span-image" alt="at" width="10" src="'. $basepath .'sites/all/modules/spamspan/image.gif" /><span class="d">example<span class="t"> [dot] </span>com</span></span>',
+        '<span class="spamspan"><span class="u">user</span><img class="spam-span-image" alt="at" width="10" src="'. base_path() . drupal_get_path('module', 'spamspan') .'/image.gif" /><span class="d">example<span class="t"> [dot] </span>com</span></span>',
     );
 
     foreach ($emails as $input => $shouldbe) {
