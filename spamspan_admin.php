@@ -208,7 +208,7 @@ class spamspan_admin {
         $vars['custom_form_url'] = base_path() . trim($vars['custom_form_url'], '/');
       }
 
-      $replace = ['%url' => $vars['custom_form_url'], '%displaytext' => $vars['custom_displaytext'], '%email' => $email];
+      $replace = array('%url' => $vars['custom_form_url'], '%displaytext' => $vars['custom_displaytext'], '%email' => $email);
 
       $output = strtr($settings['spamspan_form_pattern'], $replace);
       return $output;
