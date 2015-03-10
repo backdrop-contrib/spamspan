@@ -39,58 +39,58 @@ class spamspan_admin {
     $filter->settings += $defaults;
   
     // spamspan '@' replacement
-    $form['spamspan_at'] = array(
+    $settings['spamspan_at'] = array(
       '#type' => 'textfield',
       '#title' => t('Replacement for "@"'),
       '#default_value' => $filter->settings['spamspan_at'],
       '#required' => TRUE,
       '#description' => t('Replace "@" with this text when javascript is disabled.'),
     );
-    $form['spamspan_use_graphic'] = array(
+    $settings['spamspan_use_graphic'] = array(
       '#type' => 'checkbox',
       '#title' => t('Use a graphical replacement for "@"'),
       '#default_value' => $filter->settings['spamspan_use_graphic'],
       '#description' => t('Replace "@" with a graphical representation when javascript is disabled'
         . ' (and ignore the setting "Replacement for @" above).'),
     );
-    $form['spamspan_dot_enable'] = array(
+    $settings['spamspan_dot_enable'] = array(
       '#type' => 'checkbox',
       '#title' => t('Replace dots in email with text'),
       '#default_value' => $filter->settings['spamspan_dot_enable'],
       '#description' => t('Switch on dot replacement.'),
     );
-    $form['spamspan_dot'] = array(
+    $settings['spamspan_dot'] = array(
       '#type' => 'textfield',
       '#title' => t('Replacement for "."'),
       '#default_value' => $filter->settings['spamspan_dot'],
       '#required' => TRUE,
       '#description' => t('Replace "." with this text.'),
     );
-    $form['use_form'] = array(
+    $settings['use_form'] = array(
       '#type' => 'fieldset',
       '#title' => t('Use a form instead of a link'),
     );
-    $form['use_form']['spamspan_use_form'] = array(
+    $settings['use_form']['spamspan_use_form'] = array(
       '#type' => 'checkbox',
       '#title' => t('Use a form instead of a link'),
       '#default_value' => $filter->settings['spamspan_use_form'],
       '#description' => t('Link to a contact form instad of an email address. The following settings are used only if you select this option.'),
     );
-    $form['use_form']['spamspan_form_pattern'] = array(
+    $settings['use_form']['spamspan_form_pattern'] = array(
       '#type' => 'textfield',
       '#title' => t('Replacement string for the email address'),
       '#default_value' => $filter->settings['spamspan_form_pattern'],
       '#required' => TRUE,
       '#description' => t('Replace the email link with this string and substitute the following <br />%url = the url where the form resides,<br />%email = the email address (base64 and urlencoded),<br />%displaytext = text to display instead of the email address.'),
     );
-    $form['use_form']['spamspan_form_default_url'] = array(
+    $settings['use_form']['spamspan_form_default_url'] = array(
       '#type' => 'textfield',
       '#title' => t('Default url'),
       '#default_value' => $filter->settings['spamspan_form_default_url'],
       '#required' => TRUE,
       '#description' => t('Default url to form to use if none specified (e.g. me@example.com[custom_url_to_form])'),
     );
-    $form['use_form']['spamspan_form_default_displaytext'] = array(
+    $settings['use_form']['spamspan_form_default_displaytext'] = array(
       '#type' => 'textfield',
       '#title' => t('Default displaytext'),
       '#default_value' => $filter->settings['spamspan_form_default_displaytext'],
@@ -100,10 +100,10 @@ class spamspan_admin {
 
     // we need this to insert our own validate/submit handlers
     // we use our own validate handler to extract use_form settings
-    $form['#process'] = array(
+    $settings['use_form']['#process'] = array(
       array($this, 'settings_form_process'),
     );
-    return $form;
+    return $settings;
   }
 
   //attach our validation
