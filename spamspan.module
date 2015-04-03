@@ -140,8 +140,10 @@ function _spamspan_filter_process($text, $filter) {
   // encoded images slowing down the email regex function.
   // Therefore, remove all image contents and add them back later.
   // See https://drupal.org/node/1243042 for details.
-  _filter_spamspan_escape_images('', TRUE);
-  $text = preg_replace_callback('/<img(.*?)>/', '_filter_spamspan_escape_images', $text);
+  $images = array(array());
+  $inline_image_pattern = '/data\:(?:.+?)base64(?:.+?)["|\']/';
+  preg_match_all($inline_image_pattern, $text, $images);
+  $text = preg_replace($inline_image_pattern, '__spamspan_img_placeholder__', $text);
 
   // Now we can convert all mailto URLs
   $text = preg_replace_callback($mailtopattern, '_spamspan_callback_mailto', $text);
@@ -151,9 +153,9 @@ function _spamspan_filter_process($text, $filter) {
   $text = preg_replace_callback($emailpattern, '_spamspan_bare_email_addresses', $text);
 
   // Revert back to the original image contents.
-  _filter_spamspan_escape_images('', FALSE);
-  $text = preg_replace_callback('/<!--img(.*?)-->/', '_filter_spamspan_escape_images', $text);
-
+  foreach ($images[0] as $image) {
+    $text = preg_replace('/__spamspan_img_placeholder__/', $image, $text, 1);
+  }
   return $text;
 }
 
@@ -179,45 +181,6 @@ function _spamspan_email_addresses_with_options($matches) {
 
 function _spamspan_bare_email_addresses($matches) {
   return spamspan_admin()->output($matches[1], $matches[2]);
-}
-/**
- * Escapes the contents of HTML image tags.
- *
- * Callback for preg_replace_callback() within _spamspan_filter_process().
- *
- * @param $match
- *   An array containing matches to replace from preg_replace_callback(),
- *   whereas $match[1] is expected to contain the content to be filtered.
- * @param $escape
- *   (optional) A Boolean indicating whether to escape (TRUE) or unescape
- *   comments (FALSE). Defaults to NULL, indicating neither. If TRUE, statically
- *   cached $comments are reset.
- */
-function _filter_spamspan_escape_images($match, $escape = NULL) {
-  static $mode, $comments = array();
-
-  if (isset($escape)) {
-    $mode = $escape;
-    if ($escape){
-      $comments = array();
-    }
-    return;
-  }
-
-  // Replace all HTML image with a '<img [hash] />' placeholder.
-  if ($mode) {
-    $content = trim($match[1]);
-    $hash = md5($content);
-    $comments[$hash] = $content;
-    return "<!--img $hash -->";
-  }
-  // Or replace placeholders with actual image contents.
-  else {
-    $hash = $match[1];
-    $hash = trim($hash);
-    $content = $comments[$hash];
-    return "<img $content>";
-  }
 }
 
 /**

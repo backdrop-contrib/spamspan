@@ -244,9 +244,8 @@ class spamspan_admin {
       $contents = preg_replace('!' . SPAMSPAN_EMAIL . '!ix', '', $contents);
 
       // remove anything except certain inline elements, just in case.  NB nested
-      // <a> elements are illegal. <img> needs to be here to allow for graphic @
-      // !-- is allowed because of _filter_spamspan_escape_images
-      $contents = filter_xss($contents, array('em', 'strong', 'cite', 'b', 'i', 'code', 'span', '!--'));
+      // <a> elements are illegal.
+      $contents = filter_xss($contents, array('em', 'strong', 'cite', 'b', 'i', 'code', 'span', 'img'));
 
       if (!empty($contents)) {
         $output .= '<span class="a"> (' . $contents . ')</span>';
