@@ -57,8 +57,8 @@ class SpamspanTestCase extends DrupalWebTestCase {
       'user@example.co.uk' =>
         '<span class="spamspan"><span class="u">user</span> [at] <span class="d">example.co.uk</span></span>',
 
-      'user@example.museum' =>
-        '<span class="spamspan"><span class="u">user</span> [at] <span class="d">example.museum</span></span>',
+      'user@example.somenewlongtld' =>
+        '<span class="spamspan"><span class="u">user</span> [at] <span class="d">example.somenewlongtld</span></span>',
 
       'user.user@example.com' =>
         '<span class="spamspan"><span class="u">user.user</span> [at] <span class="d">example.com</span></span>',

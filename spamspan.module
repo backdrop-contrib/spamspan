@@ -29,8 +29,8 @@ define('SPAMSPAN_EMAIL', "
      ((?:        # Group 2
        [-\w]+\.            # one or more letters or dashes followed by a dot.
        )+                  # The whole thing one or more times
-       [A-Z]{2,6}          # with between two and six letters at the end (NB
-                           # .museum)
+       [A-Z]{2,63}         # with between 2 and 63 letters at the end (NB
+                           # new TLDs)
      )
 ");
 
