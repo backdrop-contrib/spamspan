@@ -7,6 +7,7 @@
  * Move less frequently used code out of the .module file.
  */
 
+// TODO: refactor code to drop spamspan_admin class
 class spamspan_admin {
   protected $configuration_page = 'admin/config/content/formats/spamspan';
   protected $defaults;
@@ -100,30 +101,10 @@ class spamspan_admin {
 
     // we need this to insert our own validate/submit handlers
     // we use our own validate handler to extract use_form settings
-    $settings['use_form']['#process'] = array(
-      array($this, 'settings_form_process'),
-    );
+    $settings['use_form']['#process'] = array('_spamspan_admin_settings_form_process');
     return $settings;
   }
 
-  //attach our validation
-  public function settings_form_process(&$element, &$form_state, &$complete_form) {
-    $complete_form['#validate'][] = array($this, 'settings_form_validate');
-    return $element;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function settings_form_validate(&$form, &$form_state) {
-    $settings = $form_state['values']['filters']['spamspan']['settings'];
-    $use_form = $settings['use_form'];
-
-    //no trees, see https://www.drupal.org/node/2378437
-    unset($settings['use_form']);
-    $settings += $use_form;
-    $form_state['values']['filters']['spamspan']['settings'] = $settings;
-  }
 
   /**
    * Responds to hook_help().
@@ -279,4 +260,19 @@ class spamspan_admin {
   function page_submit($form, &$form_state) {
     $this->page_object()->submit($form, $form_state);
   }
+}
+
+function _spamspan_admin_settings_form_process(&$element, &$form_state, &$complete_form) {
+  $complete_form['#validate'][] = '_spamspan_admin_settings_form_validate';
+  return $element;
+}
+
+function _spamspan_admin_settings_form_validate(&$form, &$form_state) {
+  $settings = $form_state['values']['filters']['spamspan']['settings'];
+  $use_form = $settings['use_form'];
+
+  //no trees, see https://www.drupal.org/node/2378437
+  unset($settings['use_form']);
+  $settings += $use_form;
+  $form_state['values']['filters']['spamspan']['settings'] = $settings;
 }
