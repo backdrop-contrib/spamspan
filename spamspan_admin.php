@@ -159,7 +159,7 @@ class spamspan_admin {
    * @return
    *  The span with which to replace the email address
    */
-  function output($name, $domain, $contents = '', $headers = '', $vars = array(), $settings = NULL) {
+  function output($name, $domain, $contents = '', $headers = array(), $vars = array(), $settings = NULL) {
     if ($settings === NULL) {
       $settings = $this->defaults;
       if ($this->filter_is()) {
@@ -209,13 +209,22 @@ class spamspan_admin {
 
   
     // if there are headers, include them as eg (subject: xxx, cc: zzz)
-    if (isset($headers) and $headers) {
-      $temp_headers = array();
-      foreach ($headers as $value) {
-        //replace the = in the headers arrays by ": " to look nicer
-        $temp_headers[] = str_replace('=', ': ', $value);
+    // we replace the = in the headers by ": " to look nicer
+    if (count($headers)) {
+      foreach ($headers as $key => $header) {
+        // check if header is already urlencoded, if not, encode it
+        if ($header == rawurldecode($header)) {
+          $header = rawurlencode($header);
+          //replace the first = sign
+          $header = preg_replace('/%3D/', ': ', $header, 1);
+        }
+        else {
+          $header = str_replace('=', ': ', $header);
+        }
+
+        $headers[$key] = $header;
       }
-      $output .= '<span class="h"> (' . check_plain(implode(', ', $temp_headers)) . ') </span>';
+      $output .= '<span class="h"> (' . check_plain(implode(', ', $headers)) . ') </span>';
     }
 
     // If there are tag contents, include them, between round brackets.

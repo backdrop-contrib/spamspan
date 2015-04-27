@@ -113,27 +113,27 @@ function _spamspan_filter_process($text, $filter) {
   // the name into the third group and the domain into
   // the fourth. The tag contents go into the fifth.
 
-  $mailtopattern = "!<a\s+                            # opening <a and spaces
-      ((?:\w+\s*=\s*)(?:\w+|\"[^\"]*\"|'[^']*'))*?    # any attributes
-      \s*                                             # whitespace
-      href\s*=\s*(['\"])(mailto:"                     # the href attribute
-      . SPAMSPAN_EMAIL .                              # The email address
-      "(?:\?[A-Za-z0-9_= %\.\-\~\_\&;\!]*)?)" .       # an optional ? followed
-                                                      # by a query string. NB
-                                                      # we allow spaces here,
-                                                      # even though strictly
-                                                      # they should be URL
-                                                      # encoded
-      "\\2                                            # the relevant quote
-                                                      # character
-      ((?:\s+\w+\s*=\s*)(?:\w+|\"[^\"]*\"|'[^']*'))*? # any more attributes
-      >                                               # end of the first tag
-      (.*?)                                           # tag contents.  NB this
-                                                      # will not work properly
-                                                      # if there is a nested
-                                                      # <a>, but this is not
-                                                      # valid xhtml anyway.
-      </a>                                            # closing tag
+  $mailtopattern = "!<a\s+                                # opening <a and spaces
+      ((?:\w+\s*=\s*)(?:\w+|\"[^\"]*\"|'[^']*'))*?        # any attributes
+      \s*                                                 # whitespace
+      href\s*=\s*(['\"])(mailto:"                         # the href attribute
+      . SPAMSPAN_EMAIL .                                  # The email address
+      "(?:\?[A-Za-z0-9_= %\.\-\~\_\&;\!\*\(\)\'#&]*)?)" . # an optional ? followed
+                                                          # by a query string. NB
+                                                          # we allow spaces here,
+                                                          # even though strictly
+                                                          # they should be URL
+                                                          # encoded
+      "\\2                                                # the relevant quote
+                                                          # character
+      ((?:\s+\w+\s*=\s*)(?:\w+|\"[^\"]*\"|'[^']*'))*?     # any more attributes
+      >                                                   # end of the first tag
+      (.*?)                                               # tag contents.  NB this
+                                                          # will not work properly
+                                                          # if there is a nested
+                                                          # <a>, but this is not
+                                                          # valid xhtml anyway.
+      </a>                                                # closing tag
       !ix";
 
   // HTML image tags need to be handled separately, as they may contain base64
@@ -224,6 +224,10 @@ function _spamspan_callback_mailto($matches) {
   // into its component parts, putting them in $headers as
   // [0]=>"header=contents" etc.  We cannot use parse_str because
   // the query string might contain dots.
+
+  // Single quote can be encoded as &#039; which breaks parse_url
+  // Replace it back to a single quote which is perfectly valid
+  $matches[3] = str_replace("&#039;", '\'', $matches[3]);
   $query = parse_url($matches[3], PHP_URL_QUERY);
   $query = str_replace('&amp;', '&', $query);
   $headers = preg_split('/[&;]/', $query);

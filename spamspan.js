@@ -24,24 +24,28 @@ Drupal.behaviors.spamspan = {
         "@" +
         $("span.d", this).text())
         .replace(/\s+/g, '');
-      // Find the header text, and remove the round brackets from the start and end
-      var _headerText = $("span.h", this).text().replace(/^ ?\((.*)\) ?$/, "$1");
-      // split into individual headers, and return as an array of header=value pairs
-      var _headers = $.map(_headerText.split(/, /), function(n, i){
-        return (n.replace(/: /,"="));
-      });
+
+      // Build the mailto URI
+      var _mailto = "mailto:" + _mail;
+      if ($('span.h', this).length) {
+        // Find the header text, and remove the round brackets from the start and end
+        var _headerText = $("span.h", this).text().replace(/^ ?\((.*)\) ?$/, "$1");
+        // split into individual headers, and return as an array of header=value pairs
+        var _headers = $.map(_headerText.split(/, /), function (n, i) {
+          return (n.replace(/: /, "="));
+        });
+
+        var _headerstring = _headers.join('&');
+        _mailto += _headerstring ? ("?" + _headerstring) : '';
+      }
+
       // Find the anchor content, and remove the round brackets from the start and end
       var _anchorContent = $("span.a", this).html();
       if (_anchorContent) {
         _anchorContent = _anchorContent.replace(/^ ?\((.*)\) ?$/, "$1");
       }
-      // Build the mailto URI
-      var _mailto = "mailto:" + encodeURIComponent(_mail);
-      var _headerstring = _headers.join('&');
-      _mailto += _headerstring ? ("?" + _headerstring) : '';
+
       // create the <a> element, and replace the original span contents
-      // Issue https://www.drupal.org/node/1540732
-      // .attr("href", _mailto) replaced by .attr("href", decodeURIComponent(_mailto))
 
       //check for extra <a> attributes
       var _attributes = $("span.e", this).html();
@@ -52,7 +56,7 @@ Drupal.behaviors.spamspan = {
 
       $(this).after(
         $(_tag)
-          .attr("href", decodeURIComponent(_mailto))
+          .attr("href", _mailto)
           .html(_anchorContent ? _anchorContent : _mail)
           .addClass("spamspan")
       ).remove();
