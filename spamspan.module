@@ -277,7 +277,7 @@ function spamspan_menu() {
  */
 function spamspan($text = '', $settings = array()) {
   //apply default settings
-  $info = spamspan_filter_info();
+  $info = filter_get_filters();
   $defaults = $info['spamspan']['default settings'];
   //create a dummy filter object so we can apply the settings
   $filter = new stdClass();
