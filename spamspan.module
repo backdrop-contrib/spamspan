@@ -176,7 +176,7 @@ function _spamspan_email_addresses_with_options($matches) {
       }
     }
   }
-  return spamspan_admin()->output($matches[1], $matches[2], '', '', $vars);
+  return spamspan_admin()->output($matches[1], $matches[2], '', array(), $vars);
 }
 
 function _spamspan_bare_email_addresses($matches) {
