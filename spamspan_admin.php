@@ -202,8 +202,8 @@ class spamspan_admin {
 
     if ($settings['spamspan_dot_enable']) {
       // Replace .'s in the address with [dot]
-      $name = str_replace('.', '<span class="t">' . $settings['spamspan_dot'] . '</span>', $name);
-      $domain = str_replace('.', '<span class="t">' . $settings['spamspan_dot'] . '</span>', $domain);
+      $name = str_replace('.', '<span class="o">' . $settings['spamspan_dot'] . '</span>', $name);
+      $domain = str_replace('.', '<span class="o">' . $settings['spamspan_dot'] . '</span>', $domain);
     }
     $output = '<span class="u">' . $name . '</span>' . $at . '<span class="d">' . $domain . '</span>';
 
@@ -238,7 +238,7 @@ class spamspan_admin {
       $contents = filter_xss($contents, array('em', 'strong', 'cite', 'b', 'i', 'code', 'span', 'img'));
 
       if (!empty($contents)) {
-        $output .= '<span class="a"> (' . $contents . ')</span>';
+        $output .= '<span class="t"> (' . $contents . ')</span>';
       }
     }
 
