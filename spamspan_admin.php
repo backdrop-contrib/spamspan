@@ -235,7 +235,7 @@ class spamspan_admin {
 
       // remove anything except certain inline elements, just in case.  NB nested
       // <a> elements are illegal.
-      $contents = filter_xss($contents, array('em', 'strong', 'cite', 'b', 'i', 'code', 'span', 'img'));
+      $contents = filter_xss($contents, array('em', 'strong', 'cite', 'b', 'i', 'code', 'span', 'img', 'br'));
 
       if (!empty($contents)) {
         $output .= '<span class="t"> (' . $contents . ')</span>';
