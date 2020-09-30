@@ -1,11 +1,9 @@
 <?php
-
 /**
  * @file
- * This module implements the spamspan technique (http://www.spamspan.com ) for hiding email addresses from spambots.
- *
- * Move less frequently used code out of the .module file.
+ * Administration page for the SpamSpan module.
  */
+
 
 class spamspan_admin_page {
   protected $parent;
@@ -14,6 +12,8 @@ class spamspan_admin_page {
   function __construct($parent) {
     $this->parent = $parent;
   }
+
+
   /**
    * Return the admin page.
    * External text should be checked: = array('#markup' => check_plain($format->name));
@@ -59,7 +59,11 @@ class spamspan_admin_page {
       '#default_value' => $test_text,
     );
     $filter = (object) array('settings' => array());
-    $settings_form = $this->parent->filter_settings(array(), array(), $filter, '', $defaults, array());
+
+
+    $settings_form = _spamspan_filter_settings(array(), array(), $filter, '', $defaults, array());
+
+
     foreach ($defaults as $field => $value) {
       if (isset($settings_form['use_form'][$field])) {
         $form[$field] = $settings_form['use_form'][$field];

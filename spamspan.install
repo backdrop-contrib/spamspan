@@ -1,0 +1,20 @@
+<?php
+/**
+ * @file
+ * Installation/uninstallation/migration functions.
+ */
+
+/**
+ * Move SpamSpan settings from variables to config.
+ */
+function spamspan_update_1000() {
+  $config = config('spamspan.settings');
+  $config->set('test_text', 'My work email is me@example.com and my home email is me@example.org.');
+  $config->save();
+
+  // Delete variables.
+  update_variable_del('spamspan_at');
+  update_variable_del('spamspan_domainclass');
+  update_variable_del('spamspan_userclass');
+  update_variable_del('spamspan_use_graphic');
+}

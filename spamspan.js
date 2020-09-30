@@ -8,9 +8,10 @@ Licence version 2, available at http://www.gnu.org/licenses/gpl.txt
 --------------------------------------------------------------------------
 */
 
-(function ($) { //Standard drupal jQuery wrapper.  See http://drupal.org/update/modules/6/7#javascript_compatibility
+//Standard jQuery wrapper. See http://drupal.org/update/modules/6/7#javascript_compatibility
+(function ($) {
 // load SpamSpan
-Drupal.behaviors.spamspan = {
+Backdrop.behaviors.spamspan = {
   attach: function(context, settings) {
     // get each span with class spamspan
     $("span.spamspan", context).each(function (index) {
@@ -18,7 +19,7 @@ Drupal.behaviors.spamspan = {
       if ($('span.o', this).length) {
         $('span.o', this).replaceWith('.');
       }
-      
+
       // For each selected span, set mail to the relevant value, removing spaces
       var _mail = ($("span.u", this).text() +
         "@" +

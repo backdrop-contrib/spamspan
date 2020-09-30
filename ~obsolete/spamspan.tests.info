@@ -1,0 +1,6 @@
+[SpamspanTestCase]
+name = Spamspan
+description = Ensure that spamspan obfuscates emails properly
+group = Spamspan
+file = spamspan.test
+

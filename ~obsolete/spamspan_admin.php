@@ -9,11 +9,10 @@
 
 // TODO: refactor code to drop spamspan_admin class
 class spamspan_admin {
-  protected $configuration_page = 'admin/config/content/formats/spamspan';
   protected $defaults;
   protected $display_name = 'SpamSpan';
   protected $filter;
-  protected $help = '<p>The SpamSpan module obfuscates email addresses to help prevent spambots from collecting them. Read the <a href="@url">Spamspan configuration page</a>.</p>';
+  protected $help = '<p>The SpamSpan module obfuscates email addresses to help prevent spambots from collecting them. Read the <a href="@url">SpamSpan configuration page</a>.</p>';
   protected $page;
 
   function __construct() {
@@ -32,89 +31,6 @@ class spamspan_admin {
   function filter_set($filter) {
     $this->filter = $filter;
   }
-  
-  /**
-   * Settings callback for spamspan filter
-   */
-  function filter_settings($form, $form_state, $filter, $format, $defaults, $filters) {
-    $filter->settings += $defaults;
-  
-    // spamspan '@' replacement
-    $settings['spamspan_at'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Replacement for "@"'),
-      '#default_value' => $filter->settings['spamspan_at'],
-      '#required' => TRUE,
-      '#description' => t('Replace "@" with this text when javascript is disabled.'),
-    );
-    $settings['spamspan_use_graphic'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Use a graphical replacement for "@"'),
-      '#default_value' => $filter->settings['spamspan_use_graphic'],
-      '#description' => t('Replace "@" with a graphical representation when javascript is disabled'
-        . ' (and ignore the setting "Replacement for @" above).'),
-    );
-    $settings['spamspan_dot_enable'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Replace dots in email with text'),
-      '#default_value' => $filter->settings['spamspan_dot_enable'],
-      '#description' => t('Switch on dot replacement.'),
-    );
-    $settings['spamspan_dot'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Replacement for "."'),
-      '#default_value' => $filter->settings['spamspan_dot'],
-      '#required' => TRUE,
-      '#description' => t('Replace "." with this text.'),
-    );
-    $settings['use_form'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Use a form instead of a link'),
-    );
-    $settings['use_form']['spamspan_use_form'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Use a form instead of a link'),
-      '#default_value' => $filter->settings['spamspan_use_form'],
-      '#description' => t('Link to a contact form instad of an email address. The following settings are used only if you select this option.'),
-    );
-    $settings['use_form']['spamspan_form_pattern'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Replacement string for the email address'),
-      '#default_value' => $filter->settings['spamspan_form_pattern'],
-      '#required' => TRUE,
-      '#description' => t('Replace the email link with this string and substitute the following <br />%url = the url where the form resides,<br />%email = the email address (base64 and urlencoded),<br />%displaytext = text to display instead of the email address.'),
-    );
-    $settings['use_form']['spamspan_form_default_url'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Default url'),
-      '#default_value' => $filter->settings['spamspan_form_default_url'],
-      '#required' => TRUE,
-      '#description' => t('Default url to form to use if none specified (e.g. me@example.com[custom_url_to_form])'),
-    );
-    $settings['use_form']['spamspan_form_default_displaytext'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Default displaytext'),
-      '#default_value' => $filter->settings['spamspan_form_default_displaytext'],
-      '#required' => TRUE,
-      '#description' => t('Default displaytext to use if none specified (e.g. me@example.com[custom_url_to_form|custom_displaytext])'),
-    );
-
-    // we need this to insert our own validate/submit handlers
-    // we use our own validate handler to extract use_form settings
-    $settings['use_form']['#process'] = array('_spamspan_admin_settings_form_process');
-    return $settings;
-  }
-
-
-  /**
-   * Responds to hook_help().
-   */
-  function help($path, $arg) {
-    switch ($path) {
-      case 'admin/help#spamspan':
-        return t($this->help, array('@url' => $this->configuration_page));
-    }
-  }
 
   /**
    * @function
@@ -122,20 +38,6 @@ class spamspan_admin {
    */
   function log($message, $variables = array()) {
     watchdog($this->display_name, $message, $variables);
-  }
-  /**
-   * Responds to hook_menu().
-   */
-  function menu() {
-    $items[$this->configuration_page] = array(
-      'title' => 'Spamspan',
-      'description' => 'Experiment with the Spamspan function.',
-      'type' => MENU_LOCAL_TASK,
-      'page callback' => 'drupal_get_form',
-      'page arguments' => array('spamspan_admin_page'),
-      'access arguments' => array('administer filters'),
-    );
-    return $items;
   }
 
   /**
@@ -207,7 +109,7 @@ class spamspan_admin {
     }
     $output = '<span class="u">' . $name . '</span>' . $at . '<span class="d">' . $domain . '</span>';
 
-  
+
     // if there are headers, include them as eg (subject: xxx, cc: zzz)
     // we replace the = in the headers by ": " to look nicer
     if (count($headers)) {
@@ -249,10 +151,11 @@ class spamspan_admin {
     }
 
     $output = '<span class="spamspan">' . $output . '</span>';
-    
+
     return $output;
   }
-  
+
+
   /**
    * Return the admin page.
    * External text should be checked: = array('#markup' => check_plain($format->name));
@@ -271,17 +174,3 @@ class spamspan_admin {
   }
 }
 
-function _spamspan_admin_settings_form_process(&$element, &$form_state, &$complete_form) {
-  $complete_form['#validate'][] = '_spamspan_admin_settings_form_validate';
-  return $element;
-}
-
-function _spamspan_admin_settings_form_validate(&$form, &$form_state) {
-  $settings = $form_state['values']['filters']['spamspan']['settings'];
-  $use_form = $settings['use_form'];
-
-  //no trees, see https://www.drupal.org/node/2378437
-  unset($settings['use_form']);
-  $settings += $use_form;
-  $form_state['values']['filters']['spamspan']['settings'] = $settings;
-}
