@@ -45,17 +45,22 @@ function spamspan_settings_form($form, &$form_state) {
   );
   $defaults_list = array();
   foreach ($defaults as $name => $value) {
-    if ($value === TRUE) { $value = 'TRUE'; }
-    elseif ($value === FALSE) { $value = 'FALSE'; }
+    if ($value === TRUE) {
+      $value = 'TRUE';
+    }
+    elseif ($value === FALSE) {
+      $value = 'FALSE';
+    }
     $defaults_list[] = $name . ': <strong>' . htmlentities($value) . '</strong>';
   }
   $form['defaults_list'][] = array(
   '#markup' => t('
-<p>These defaults are used for new filters and for spamspan() when there is no filter specified.
-</p>
+These defaults are used for new filters and for <code>spamspan()</code> when there is no filter specified.
 <ul>
 <li>' . implode('</li><li>', $defaults_list) . '</li>
 </ul>'),
+    '#prefix' => '<p>',
+    '#suffix' => '</p>',
   );
 
   $form['test'] = array(
@@ -63,7 +68,7 @@ function spamspan_settings_form($form, &$form_state) {
     '#title' => t('Test'),
   );
   $form['test'][] = array(
-    '#markup' => t('Test the <code>spamspan()</code> function using the following <strong>Test text</strong> field. Enter text containing an email address then hit the Test button.'),
+    '#markup' => t('Test the <code>spamspan()</code> function using the following <strong>Test text</strong> field. Enter text containing an email address, then hit the Test button.'),
     '#prefix' => '<p>',
     '#suffix' => '</p>',
   );
@@ -71,10 +76,10 @@ function spamspan_settings_form($form, &$form_state) {
   $test_text = config_get('spamspan.settings', 'test_text');
   $form['test']['test_text'] = array(
     '#type' => 'textfield',
-    '#title' => t('Test text'),
+    '#title' => t('Test Text'),
     '#size' => 80,
     '#maxlength' => 200,
-    '#default_value' => config_get('spamspan.settings', 'test_text'),
+    '#default_value' => $test_text,
   );
 
   if (isset($form_state['test_defaults'])) {
@@ -83,24 +88,20 @@ function spamspan_settings_form($form, &$form_state) {
   else {
     $test_defaults = $defaults;
   }
-
   $filter = (object) array('settings' => $test_defaults);
   $filter_settings_form = _spamspan_filter_settings(array(), array(), $filter, '');
-
   $form['test']['filter_settings'] = $filter_settings_form;
 
   $form['test']['results'] = array(
     '#type' => 'fieldset',
     '#title' => t('Results'),
   );
-
   $test_result = spamspan($test_text, $test_defaults);
-
   $form['test']['results']['test_js'] = array(
-    '#markup' => '<p>The result passed through spamspan() and processed by Javasript:</p><div style="background-color: #ccffcc;">' .
+    '#markup' => '<p>The result passed through <code>spamspan()</code> and processed by Javascript:</p><div style="background-color: #ccffcc;">' .
       $test_result . '</div>');
   $form['test']['results']['test_result'] = array(
-    '#markup' => '<p>The result passed through spamspan() but not processed by Javascript:</p><div style="background-color: #ccccff;">' .
+    '#markup' => '<p>The result passed through <code>spamspan()</code> but not processed by Javascript:</p><div style="background-color: #ccccff;">' .
       str_replace('class="spamspan"', '', $test_result) . '</div>');
   $form['test']['results']['test_as_html'] = array(
     '#markup' => '<p>The HTML in the result:</p><div style="background-color: #ffcccc;">' .

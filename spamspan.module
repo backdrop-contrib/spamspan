@@ -39,6 +39,28 @@ define('SPAMSPAN_EMAIL', "
 
 
 /**
+ * A simple utility function wrapping the main processing callback.
+ * This function may be called by other modules and themes.
+ *
+ * @param $text
+ *  Text, maybe containing email addresses.
+ * @param $settings
+ * An associative array of settings to be applied.
+ * @return
+ *  The input text with emails replaced by spans
+ */
+function spamspan($text = '', $settings = array()) {
+  //apply default settings
+  $info = filter_get_filters();
+  $defaults = $info['spamspan']['default settings'];
+  //create a dummy filter object so we can apply the settings
+  $filter = new stdClass();
+  $filter->settings = $settings + $defaults;
+  return _spamspan_filter_process($text, $filter);
+}
+
+
+/**
  * Implements hook_menu().
  */
 function spamspan_menu() {
@@ -64,6 +86,36 @@ function spamspan_config_info() {
     'group' => t('Configuration'),
   );
   return $prefixes;
+}
+
+
+/**
+ * Implements hook_theme().
+ */
+function spamspan_theme($existing, $type, $theme, $path) {
+  return array(
+    'spamspan_at_sign' => array(
+      'variables' => array(
+        // the spamspan filter settings if anyone needs them
+        'settings' => array(),
+      ),
+    ),
+  );
+}
+
+
+/**
+ * Returns HTML for the SpamSpan "at" sign.
+ *
+ * @param $variables
+ *   An associative array containing nothing (in this case).
+ *
+ * @ingroup themeable
+ */
+function theme_spamspan_at_sign($variables) {
+  $output = '<img class="spam-span-image" alt="at" width="10" src="' .
+    base_path() . backdrop_get_path('module', 'spamspan') . '/image.gif" />';
+  return $output;
 }
 
 
@@ -128,7 +180,7 @@ function _spamspan_filter_settings($form, $form_state, $filter, $format) {
   );
   $settings['use_form'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Use a form instead of a link'),
+    '#title' => t('Form vs Link'),
   );
   $settings['use_form']['spamspan_use_form'] = array(
     '#type' => 'checkbox',
@@ -145,17 +197,17 @@ function _spamspan_filter_settings($form, $form_state, $filter, $format) {
   );
   $settings['use_form']['spamspan_form_default_url'] = array(
     '#type' => 'textfield',
-    '#title' => t('Default url'),
+    '#title' => t('Default URL'),
     '#default_value' => $filter->settings['spamspan_form_default_url'],
     '#required' => TRUE,
     '#description' => t('Default url to form to use if none specified (e.g. me@example.com[custom_url_to_form])'),
   );
   $settings['use_form']['spamspan_form_default_displaytext'] = array(
     '#type' => 'textfield',
-    '#title' => t('Default displaytext'),
+    '#title' => t('Default display text'),
     '#default_value' => $filter->settings['spamspan_form_default_displaytext'],
     '#required' => TRUE,
-    '#description' => t('Default displaytext to use if none specified (e.g. me@example.com[custom_url_to_form|custom_displaytext])'),
+    '#description' => t('Default display text to use if none specified (e.g. me@example.com[custom_url_to_form|custom_displaytext])'),
   );
 
   // We need this to insert our own validate/submit handler, which we use to
@@ -213,9 +265,8 @@ function _spamspan_filter_tips($filter, $format, $long = FALSE) {
 function _spamspan_filter_process($text, $filter) {
 
   // The preg_replace_callback functions below cannot take any additional
-  // arguments, so we pass the relevant settings in a global variable.
-  global $SPAMSPAN_PROCESS_SETTINGS;
-  $SPAMSPAN_PROCESS_SETTINGS = $filter->settings;
+  // arguments, so we pass the relevant settings in a quasi-global variable.
+  _spamspan_set_process_settings($filter->settings);
 
   // Top and tail the email regexp it so that it is case insensitive and
   // ignores whitespace.
@@ -275,10 +326,27 @@ function _spamspan_filter_process($text, $filter) {
   foreach ($images[0] as $image) {
     $text = preg_replace('/__spamspan_img_placeholder__/', $image, $text, 1);
   }
-  // Restore the global to be a good citizen for subsequent calls.
-
-  $SPAMSPAN_PROCESS_SETTINGS = NULL;
   return $text;
+}
+
+
+/**
+ * Set quasi-global variable passed to preg_replace_callback callbacks.
+ */
+function _spamspan_set_process_settings($settings = NULL) {
+  static $stored_settings = NULL;
+  if (isset($settings)) {
+    $stored_settings = $settings;
+  }
+  return $stored_settings;
+}
+
+
+/**
+ * Get quasi-global variable passed to preg_replace_callback callbacks.
+ */
+function _spamspan_get_process_settings() {
+  return _spamspan_set_process_settings();
 }
 
 
@@ -327,9 +395,8 @@ function _spamspan_callback_mailto($matches) {
     $vars['extra_attributes'] = implode(' ', $attributes);
   }
 
-  global $SPAMSPAN_PROCESS_SETTINGS;
   return _spamspan_output($matches[4], $matches[5], $matches[7], $headers,
-    $vars, $SPAMSPAN_PROCESS_SETTINGS);
+    $vars, _spamspan_get_process_settings());
 }
 
 /**
@@ -353,9 +420,8 @@ function _spamspan_email_addresses_with_options($matches) {
       }
     }
   }
-  global $SPAMSPAN_PROCESS_SETTINGS;
   return _spamspan_output($matches[1], $matches[2], '', array(), $vars,
-    $SPAMSPAN_PROCESS_SETTINGS);
+    _spamspan_get_process_settings());
 }
 
 
@@ -363,9 +429,8 @@ function _spamspan_email_addresses_with_options($matches) {
  * Callback for preg_replace_callback to handle bare email addresses.
  */
 function _spamspan_bare_email_addresses($matches) {
-  global $SPAMSPAN_PROCESS_SETTINGS;
   return _spamspan_output($matches[1], $matches[2], '', array(), array(),
-    $SPAMSPAN_PROCESS_SETTINGS);
+    _spamspan_get_process_settings());
 }
 
 
@@ -415,7 +480,7 @@ function _spamspan_output($name, $domain, $contents = '', $headers = array(),
     if (!$url_parts) {
       $vars['custom_form_url'] = '';
     }
-    else if (empty($url_parts['host'])) {
+    elseif (empty($url_parts['host'])) {
       $vars['custom_form_url'] = base_path() . trim($vars['custom_form_url'], '/');
     }
 
@@ -475,62 +540,11 @@ function _spamspan_output($name, $domain, $contents = '', $headers = array(),
   // put in the extra <a> attributes
   // this has to come after the xss filter, since we want comment tags preserved
   if (!empty($vars['extra_attributes'])) {
-    $output .= '<span class="e"><!--'. strip_tags($vars['extra_attributes']) .'--></span>';
+    $output .= '<span class="e"><!--' .
+      strip_tags($vars['extra_attributes']) . '--></span>';
   }
 
   $output = '<span class="spamspan">' . $output . '</span>';
 
-  return $output;
-}
-
-
-/**
- * A simple utility function wrapping the main processing callback.
- * This function may be called by other modules and themes.
- *
- * @param $text
- *  Text, maybe containing email addresses.
- * @param $settings
- * An associative array of settings to be applied.
- * @return
- *  The input text with emails replaced by spans
- */
-function spamspan($text = '', $settings = array()) {
-  //apply default settings
-  $info = filter_get_filters();
-  $defaults = $info['spamspan']['default settings'];
-  //create a dummy filter object so we can apply the settings
-  $filter = new stdClass();
-  $filter->settings = $settings + $defaults;
-  return _spamspan_filter_process($text, $filter);
-}
-
-
-/**
- * Implements hook_theme().
- */
-function spamspan_theme($existing, $type, $theme, $path) {
-  return array(
-    'spamspan_at_sign' => array(
-      'variables' => array(
-        // the spamspan filter settings if anyone needs them
-        'settings' => array(),
-      ),
-    ),
-  );
-}
-
-
-/**
- * Returns HTML for the SpamSpan "at" sign.
- *
- * @param $variables
- *   An associative array containing nothing (in this case).
- *
- * @ingroup themeable
- */
-function theme_spamspan_at_sign($variables) {
-  $output = '<img class="spam-span-image" alt="at" width="10" src="' .
-    base_path() . backdrop_get_path('module', 'spamspan') . '/image.gif" />';
   return $output;
 }

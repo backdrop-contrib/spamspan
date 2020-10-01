@@ -1,8 +1,15 @@
 <?php
+/**
+ * @file
+ * SpamSpan tests.
+ */
 
-class SpamspanTestCase extends DrupalWebTestCase {
+/**
+ * Tests SpamSpan email obfuscation.
+ */
+class SpamspanTestCase extends BackdropWebTestCase {
 
-	public static function getInfo() {
+  public static function getInfo() {
     // Note: getInfo() strings are not translated with t().
     return array(
       'name' => 'Spamspan',
@@ -15,7 +22,7 @@ class SpamspanTestCase extends DrupalWebTestCase {
     parent::setUp(array('spamspan'));
   }
 
-	//wrapper function that conveniently wraps some text around main test subject and then asserts
+  //wrapper function that conveniently wraps some text around main test subject and then asserts
   private function _assert($input, $shouldbe, $prefix = '', $suffix = '') {
     $output = spamspan($prefix . $input . $suffix);
     $this->assertEqual($prefix . $shouldbe . $suffix, $output);
@@ -34,8 +41,8 @@ class SpamspanTestCase extends DrupalWebTestCase {
     $this->assertEqual($prefix . $shouldbe . $suffix, $output);
   }
 
-	function testSpamspan() {
-		// test that strings without emails a passed unchanged
+  function testSpamspan() {
+    // test that strings without emails a passed unchanged
     $noemails = array(
       'no email here',
       'oneword',
@@ -202,6 +209,6 @@ class SpamspanTestCase extends DrupalWebTestCase {
       $this->_assert_at_dot($input, $shouldbe, ' ', ' ');
     }
 
-	}
-	
+  }
+
 }
