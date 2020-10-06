@@ -22,17 +22,17 @@ https://backdropcms.org/guide/modules.
 Authoring > Text Editors and formats > SpamSpan
 (admin/config/content/formats/spamspan) to test out SpamSpan.
 
-- The go to the Text Formats Configuration page (admin/config/content/formats)
+- Then go to the Text Formats Configuration page (admin/config/content/formats)
 and configure the desired input formats to enable the filter.
 
-- Important: rearrange the Filter processing order to resolve conflicts with
+- Important: rearrange the filter processing order to resolve conflicts with
 other filters.  To avoid problems, you should at least make sure that the
 SpamSpan filter has a higher weighting (greater number) than the line break
 filter which comes with Drupal ("Convert line breaks into HTML" should come
-above SpamSpan in the list of Enabled filters).  If you use HTML filter ("Limit
-allowed HTML tags"), you may need to make sure that `<span>` is one of the
-allowed tags. Also, the URL filter ("Convert URLs into links") must come after
-SpamSpan.
+above SpamSpan in the list of Enabled filters).  If you use the HTML filter
+("Limit allowed HTML tags"), you may need to make sure that `<span>` is one of
+the allowed tags. Also, the URL filter ("Convert URLs into links") must come
+after SpamSpan.
 
 Documentation
 -------------
