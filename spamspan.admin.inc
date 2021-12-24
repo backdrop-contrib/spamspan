@@ -11,9 +11,8 @@
 function spamspan_settings_form($form, &$form_state) {
 
   $form[] = array(
+    '#type' => 'help',
     '#markup' => t('The SpamSpan module obfuscates email addresses to help prevent spambots from collecting them. It will produce clickable links if JavaScript is enabled, and will show the email address as <code>example [at] example [dot] com</code> if the browser does not support JavaScript.'),
-    '#prefix' => '<p>',
-    '#suffix' => '</p>',
   );
 
   $form['configure'] = array(
@@ -21,18 +20,17 @@ function spamspan_settings_form($form, &$form_state) {
     '#title' => t('Configuration'),
   );
   $form['configure'][] = array(
-    '#markup' => t('
-<ol>
-  <li>Read the list of text formats at <a href="/admin/config/content/formats">Text formats</a>.</li>
-  <li>Select <strong>configure</strong> for any format requiring email addresses.</li>
-  <li>In <strong>Enable filters</strong>, select <em>SpamSpan email address encoding filter</em>.</li>
-  <li>In <strong>Filter processing order </strong>, move SpamSpan below <em>Convert line breaks into HTML</em> and above <em>Convert URLs into links</em>.</li>
-  <li>If you use the <strong>Limit allowed HTML tags</strong> filter, make sure that &lt;span&gt; is one of the allowed tags.</li>
-  <li>Select <strong>SpamSpan email address encoding filter</strong> to configure SpamSpan for the text format.</li>
-  <li>Select <strong>Save configuration</strong> to save your changes.</li>
-</ol>'),
-    '#prefix' => '<p>',
-    '#suffix' => '</p>',
+    '#theme' => 'item_list',
+    '#type' => 'ol',
+    '#items' => array(
+      t('Read the list of text formats at <a href="/admin/config/content/formats">Text formats</a>.'),
+      t('Select <strong>configure</strong> for any format requiring email addresses.'),
+      t('In <strong>Enable filters</strong>, select <em>SpamSpan email address encoding filter</em>.'),
+      t('In <strong>Filter processing order </strong>, move SpamSpan below <em>Convert line breaks into HTML</em> and above <em>Convert URLs into links</em>.'),
+      t('If you use the <strong>Limit allowed HTML tags</strong> filter, make sure that &lt;span&gt; is one of the allowed tags.'),
+      t('Select <strong>SpamSpan email address encoding filter</strong> to configure SpamSpan for the text format.'),
+      t('Select <strong>Save configuration</strong> to save your changes.'),
+    ),
   );
 
   $filter_info = spamspan_filter_info();
@@ -54,13 +52,12 @@ function spamspan_settings_form($form, &$form_state) {
     $defaults_list[] = $name . ': <strong>' . htmlentities($value) . '</strong>';
   }
   $form['defaults_list'][] = array(
-  '#markup' => t('
-These defaults are used for new filters and for <code>spamspan()</code> when there is no filter specified.
-<ul>
-<li>' . implode('</li><li>', $defaults_list) . '</li>
-</ul>'),
-    '#prefix' => '<p>',
-    '#suffix' => '</p>',
+    '#type' => 'help',
+    '#markup' => t('These defaults are used for new filters and for <code>spamspan()</code> when there is no filter specified.'),
+  );
+  $form['defaults_list'][] = array(
+    '#theme' => 'item_list',
+    '#items' => $defaults_list,
   );
 
   $form['test'] = array(
@@ -68,9 +65,8 @@ These defaults are used for new filters and for <code>spamspan()</code> when the
     '#title' => t('Test'),
   );
   $form['test'][] = array(
+    '#type' => 'help',
     '#markup' => t('Test the <code>spamspan()</code> function using the following <strong>Test text</strong> field. Enter text containing an email address, then hit the Test button.'),
-    '#prefix' => '<p>',
-    '#suffix' => '</p>',
   );
 
   $test_text = config_get('spamspan.settings', 'test_text');
@@ -97,17 +93,42 @@ These defaults are used for new filters and for <code>spamspan()</code> when the
     '#title' => t('Results'),
   );
   $test_result = spamspan($test_text, $test_defaults);
-  $form['test']['results']['test_js'] = array(
-    '#markup' => '<p>The result passed through <code>spamspan()</code> and processed by Javascript:</p><div style="background-color: #ccffcc;">' .
-      $test_result . '</div>');
-  $form['test']['results']['test_result'] = array(
-    '#markup' => '<p>The result passed through <code>spamspan()</code> but not processed by Javascript:</p><div style="background-color: #ccccff;">' .
-      str_replace('class="spamspan"', '', $test_result) . '</div>');
-  $form['test']['results']['test_as_html'] = array(
-    '#markup' => '<p>The HTML in the result:</p><div style="background-color: #ffcccc;">' .
-      nl2br(htmlentities($test_result)) . '</div>');
 
-  $form['test']['submit'] = array(
+  $form['test']['results']['test_js'] = array(
+    '#type' => 'help',
+    '#markup' => 'The result passed through <code>spamspan()</code> and processed by Javascript:',
+  );
+  $form['test']['results']['test_js_result'] = array(
+    '#type' => 'help',
+    '#markup' => $test_result,
+      '#prefix' => '<div style="background-color: #ccffcc;">',
+      '#suffix' => '</div>',
+  );
+
+  $form['test']['results']['test_no_js'] = array(
+    '#type' => 'help',
+    '#markup' => 'The result passed through <code>spamspan()</code> but not processed by Javascript:',
+  );
+  $form['test']['results']['test_no_js_result'] = array(
+    '#type' => 'help',
+    '#markup' => str_replace('class="spamspan"', '', $test_result),
+      '#prefix' => '<div style="background-color: #ccccff;">',
+      '#suffix' => '</div>',
+  );
+
+  $form['test']['results']['test_html'] = array(
+    '#type' => 'help',
+    '#markup' => 'The HTML in the result:',
+  );
+  $form['test']['results']['test_html_result'] = array(
+    '#type' => 'help',
+    '#markup' => nl2br(htmlentities($test_result)),
+      '#prefix' => '<div style="background-color: #ffcccc;">',
+      '#suffix' => '</div>',
+  );
+
+  $form['actions'] = array('#type' => 'actions');
+  $form['actions']['submit'] =  array(
     '#type' => 'submit',
     '#value' => t('Test'),
   );
