@@ -34,11 +34,6 @@ above SpamSpan in the list of Enabled filters).  If you use the HTML filter
 the allowed tags. Also, the URL filter ("Convert URLs into links") must come
 after SpamSpan.
 
-Documentation
--------------
-
-Additional documentation is located in the[ Wiki](https://github.com/backdrop-contrib/spamspan/wiki/Documentation).
-
 Issues
 ------
 
