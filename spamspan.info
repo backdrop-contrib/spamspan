@@ -3,9 +3,8 @@ description = The SpamSpan module obfuscates email addresses to help prevent spa
 package = Input filters
 backdrop = 1.x
 type = module
-
 dependencies[] = filter
+scripts[] = js/spamspan.js
+maintainers[bugfolder] = Robert J. Lang
 
 configure = admin/config/content/formats/spamspan
-
-scripts[] = js/spamspan.js
